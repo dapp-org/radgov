@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+### radgov-propose -- make a governance proposal
+### Usage: radgov propose <target> <calldata> <url-link>
+### Propose a governance call
+set -e
+[[ $# = 3 ]] || (radgov propose --help && exit 1)
+
+sig="propose(address[],uint256[],string[],bytes[],string)"
+seth send "$RADGOV" "$sig" "["$1"]" "[0]" "['""']" "["$2"]" "$3"

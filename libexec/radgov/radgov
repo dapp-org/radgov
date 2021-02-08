@@ -1,0 +1,130 @@
+#!/usr/bin/env bash
+### radgov -- cli tool for interacting with radicle governance
+### Usage: radgov [<options>] <command> [<args>]
+###    or: radgov <command> --help
+###
+### Connection options:
+###
+###    --rpc-host=<host>          JSON-RPC host (default: `localhost')
+###    --rpc-port=<port>          JSON-RPC port (default: `8545')
+###    --rpc-url=<url>            JSON-RPC URL (overrides host and port)
+###    --rpc-accounts             use JSON-RPC node for accounts and signing
+###    -C, --chain=<chain>        remote node configuration preset
+###    --keystore=<dir>           local keystore directory
+###
+### Transaction options:
+###
+###    -F, --from=<sender>        account to send transaction from
+###    -G, --gas=<number>         number of gas units to provide
+###    -P, --gas-price=<number>   price (in wei) of each gas unit
+###    -N, --nonce=<number>       nonce value to use for the transaction
+###    -V, --value=<number>       amount (in wei) of ETH to send
+###    -S, --password=<file>      password for non-interactive signing
+
+OPTS="radgov [<options>] <command> [<args>]
+radgov <command> --help
+--
+  Connection options:
+rpc-host=host        JSON-RPC host (default: \`localhost')
+rpc-port=port        JSON-RPC port (default: \`8545')
+rpc-url=url          JSON-RPC URL (overrides host and port)
+rpc-accounts         use JSON-RPC node for accounts and signing
+C,chain=chain        remote node configuration preset
+keystore=dir         local keystore directory
+
+  Transaction options:
+F,from=address       account to send transaction from
+G,gas=number         number of gas units to provide
+P,gas-price=number   price (in wei) of each gas unit
+N,nonce=number       nonce value to use for the transaction
+V,value=number       amount (in wei) of ETH to send
+S,password=file      password for non-interactive signing
+"
+
+set -e
+
+if [[ $2 = --help ]]; then
+  exec "${0##*/}" help -- "$1"
+elif [[ $1 = -* ]] && command -v "${0##*/}-$1" &>/dev/null; then
+  exec "${0##*/}-$1" "${@:2}"
+fi
+
+eval "$(git rev-parse --parseopt -- "$@" <<<"$OPTS" || echo exit $?)"
+
+shopt -s extglob
+
+while [[ $1 ]]; do
+  case $1 in
+    --)              shift; break;;
+
+    --rpc-host)      shift; export ETH_RPC_HOST=$1;;
+    --rpc-port)      shift; export ETH_RPC_PORT=$1;;
+    --rpc-url)       shift; export ETH_RPC_URL=$1;;
+    --rpc-accounts)         export ETH_RPC_ACCOUNTS=yes;;
+    --keystore)      shift; export ETH_KEYSTORE=$1;;
+
+    -C|--chain)      shift; export SETH_CHAIN=$1;;
+
+    -B|--block)      shift; export ETH_BLOCK=$1;;
+    -F|--from)       shift; export ETH_FROM=$(seth --to-address $1);;
+    -G|--gas)        shift; export ETH_GAS=$1;;
+    -P|--gas-price)  shift;
+      export ETH_GAS_PRICE=$(seth --to-wei ${1%gwei} ${1##*([0-9])});;
+    -N|--nonce)      shift; export ETH_NONCE=$1;;
+    -V|--value)      shift; export ETH_VALUE=$1;;
+    -S|--password)   shift; export ETH_PASSWORD=$1;;
+
+    *) printf "${0##*/}: internal error: %q\\n" "$1"; exit 1
+  esac; shift
+done
+
+keystores=()
+
+if [[ $SETH_CHAIN ]]; then
+
+  case "$SETH_CHAIN" in
+    ethlive|mainnet)
+      eth_rpc_url=https://mainnet.infura.io/$INFURA_KEY
+      export ETHERSCAN_API_URL=https://api.etherscan.io/api
+      ;;
+    ropsten)
+      eth_rpc_url=https://$SETH_CHAIN.infura.io/$INFURA_KEY
+      export ETHERSCAN_API_URL=https://api-$SETH_CHAIN.etherscan.io/api
+      keystores=(
+        ~/{.ethereum,Library/Ethereum}/testnet/keystore/
+      )
+      ;;
+    kovan|rinkeby|goerli)
+      eth_rpc_url=https://$SETH_CHAIN.infura.io/$INFURA_KEY
+      export ETHERSCAN_API_URL=https://api-$SETH_CHAIN.etherscan.io/api
+      keystores=(
+        ~/{.ethereum,Library/Ethereum}/"$SETH_CHAIN"/keystore/
+        ~/{.local/share,Library/Application\ Support}/io.parity.ethereum/keys/"$SETH_CHAIN"/
+      )
+      ;;
+    *)
+      echo >&2 "${0##*/}: error: unknown chain: \\'$SETH_CHAIN'"
+      exit 1
+  esac
+fi
+
+# If needed, set ETH_KEYSTORE to a comma-separated list
+if [[ ${#keystores[@]} -gt 0 ]]; then
+  keystore=$(printf ",%s" "${keystores[@]}")
+  keystore=${keystore:1}
+  ETH_KEYSTORE=${ETH_KEYSTORE:-$keystore}
+fi
+
+[[ -n $ETH_KEYSTORE ]] && export ETH_KEYSTORE
+export ETH_RPC_URL=${ETH_RPC_URL:-${eth_rpc_url:-${ETH_RPC_HOST:-http://127.0.0.1}:${ETH_RPC_PORT:-8545}}}
+
+if ! [ -x "$(command -v "${0##*/}-${1-help}")" ]; then
+    # look for approximate matches
+    echo >&2 "'$1' is not a radgov command. See 'radgov help'."
+    echo >&2
+    echo >&2 "Most similar commands:"
+    find "${0%radgov}" -execdir echo {} ';' | agrep -1 "${0##*/}-${1-help}" >&2
+    exit 1
+fi
+
+"${0##*/}-${1-help}" "${@:2}"
