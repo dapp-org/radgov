@@ -1,9 +1,26 @@
 #!/usr/bin/env bash
 ### radgov-propose -- make a governance proposal
-### Usage: radgov propose <target> <calldata> <url-link>
-### Propose a governance call
+### Usage: radgov propose <proposal>
+### Propose a governance call from a file.
 set -e
-[[ $# = 3 ]] || (radgov propose --help && exit 1)
+[[ $# = 1 ]] || (radgov propose --help && exit 1)
 
-sig="propose(address[],uint256[],string[],bytes[],string)"
-seth send "$RADGOV" "$sig" "["$1"]" "[0]" "['""']" "["$2"]" "$3"
+description="$(sed '/^## PROPOSAL ##$/Q' $1)"
+proposal="$(sed -e '1,/^## PROPOSAL ##$/d' -e '/^[[:space:]]*$/d' -e '/```.*/d' $1)"
+
+targets="[$(cut -f1 -d' ' <<< "$proposal" | paste -sd ',')]"
+values="[$(cut -f2 -d' ' <<< "$proposal" | paste -sd ',')]"
+sigs="[$(cut -f3 -d' ' <<< "$proposal" | paste -sd ',')]"
+# data="[$(cut -f4- -d' ' <<< "$proposal" | sed 's/^$/0x/' | paste -sd ',')]"
+
+# allow for non hex calldata
+data="[$(while read cmd; do
+  eval seth calldata $cmd | cut -b -2,11-
+done <<<"$(cut -f3- -d' ' <<< "$proposal")" | paste -sd ',')]"
+
+# propose(targets,values,signatures,calldatas,description)
+PROPOSE="propose(address[],uint256[],string[],bytes[],string)"
+seth calldata "$PROPOSE" \
+  "$targets" "$values" "$sigs" "$data" "$description"
+# seth send "$RADGOV" "$PROPOSE" \
+  # "$targets" "$values" "$sigs" "$data" "${description@Q}"
