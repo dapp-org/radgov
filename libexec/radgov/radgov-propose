@@ -5,7 +5,7 @@
 set -e
 [[ $# = 1 ]] || (radgov propose --help && exit 1)
 
-description="$(sed '/^## PROPOSAL ##$/Q' $1)"
+description="$(sed '/^## PROPOSAL ##$/Q' $1 | sed 's/"/\\"/g')"
 proposal="$(sed -e '1,/^## PROPOSAL ##$/d' -e '/^[[:space:]]*$/d' -e '/```.*/d' $1)"
 
 targets="[$(cut -f1 -d' ' <<< "$proposal" | paste -sd ',')]"
@@ -21,6 +21,6 @@ done <<<"$(cut -f3- -d' ' <<< "$proposal")" | paste -sd ',')]"
 # propose(targets,values,signatures,calldatas,description)
 PROPOSE="propose(address[],uint256[],string[],bytes[],string)"
 seth calldata "$PROPOSE" \
-  "$targets" "$values" "$sigs" "$data" "$description"
+  "$targets" "$values" "$sigs" "$data" \""$description"\"
 # seth send "$RADGOV" "$PROPOSE" \
   # "$targets" "$values" "$sigs" "$data" "${description@Q}"
