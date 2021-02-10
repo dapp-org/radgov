@@ -8,17 +8,23 @@ set -eu -o pipefail
 description="$(sed -e '/^## PROPOSAL ##$/Q' -e 's/"/\\"/g' "$1")"
 proposal="$(sed -e '1,/^## PROPOSAL ##$/d' -e '/^[[:space:]]*$/d' -e '/```.*/d' "$1")"
 
-targets="[$(cut -f1 -d' ' <<< "$proposal" | paste -sd,)]"
+targets="[$(cut -f1 -d' ' <<< "$proposal" \
+  | xargs -n1 -d'\n' -I % -- sh -c "seth --to-address %" \
+  | paste -sd,)]"
 values="[$(cut -f2 -d' ' <<< "$proposal" | paste -sd,)]"
 sigs="[$(cut -f3 -d' ' <<< "$proposal" | paste -sd,)]"
 # allow for non hex calldata
 data="[$(cut -f3- -d' ' <<< "$proposal" \
   | xargs -n1 -d'\n' -I % -- sh -c "seth calldata %" \
-  | cut -b -2,11- | paste -sd ',')]"
+  | cut -b -2,11- | paste -sd,)]"
+
+targets="$(sed -e 's/\(0x[0-9a-fA-F]*\)/"\1"/g' <<< "$targets")"
+data="$(sed -e 's/\(0x[0-9a-fA-F]*\)/"\1"/g' <<< "$data")"
 
 # propose(targets,values,signatures,calldatas,description)
 PROPOSE="propose(address[],uint256[],string[],bytes[],string)"
-seth send "$RADGOV" "$PROPOSE" \
-  "$targets" "$values" "$sigs" "$data" \""$description"\"
+data="$(radgov calldata "$PROPOSE" \
+  "$targets" "$values" "$sigs" "$data" \""$description"\")"
+seth send "$RADGOV" "$data"
 # each address can only have one proposal
 seth call "$RADGOV" "latestProposalIds(address)(uint256)"

@@ -9,7 +9,7 @@ dapp testnet --dir "$TMPDIR" & PID=$!
 sleep 5
 die() {
   echo "shutting down testnet"
-  (set -x; killall -w geth go-ethereum-unlimited dapp-testnet dapp---nix-run dapp)
+  (set -x; killall -w dapp dapp-testnet dapp---nix-run geth)
   rm -rf $TMPDIR
 }
 trap die EXIT
@@ -45,4 +45,4 @@ seth call $RAD "delegate(address)" $ETH_FROM
 # go forward a block
 seth send $ETH_FROM --value 1
 export RADGOV
-libexec/radgov/radgov-propose example
+result/bin/radgov propose example
