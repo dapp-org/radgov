@@ -20,3 +20,5 @@ data="[$(cut -f3- -d' ' <<< "$proposal" \
 PROPOSE="propose(address[],uint256[],string[],bytes[],string)"
 seth send "$RADGOV" "$PROPOSE" \
   "$targets" "$values" "$sigs" "$data" \""$description"\"
+# each address can only have one proposal
+seth call "$RADGOV" "latestProposalIds(address)(uint256)"
