@@ -4,6 +4,7 @@ let
 in
   pkgs.mkShell {
     buildInputs = with pkgs; [
+      dapp
       seth
       niv
     ];

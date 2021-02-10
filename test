@@ -1,28 +1,48 @@
 #!/usr/bin/env bash
+set -eu -o pipefail -x
 
+export DAPP_SOLC=solc-0.7.5
+dapp --version
+which dapp
 TMPDIR=$(mktemp -d)
-dapp testnet --dir "$TMPDIR" &
-ETH_FROM="$TMPDIR/8545/config/account"
-ETH_KEYSTORE="$TMPDIR/8545/keystore"
+dapp testnet --dir "$TMPDIR" & PID=$!
+sleep 5
+die() {
+  echo "shutting down testnet"
+  (set -x; killall -w geth go-ethereum-unlimited dapp-testnet dapp---nix-run dapp)
+  rm -rf $TMPDIR
+}
+trap die EXIT
+
+export ETH_FROM=$(cat "$TMPDIR/8545/config/account")
+export ETH_KEYSTORE="$TMPDIR/8545/keystore"
+export ETH_PASSWORD=/dev/null
+
+DAPP_JSON=out/dapp.sol.json
+bin=$(<$DAPP_JSON jq -r '.contracts["contracts/deploy/phase0.sol"]["Phase0"].evm.bytecode.object')
+# abi=$(<DAPP_JSON jq '.contracts["contracts/deploy/phase0.sol:Phase0"].abi')
+# type=$(seth --abi-constructor <<< "$abi")
+# address=$(set -x; seth send --create "$bin" "${type/constructor/${1#*:}}" "${@:2}")
 
 # deploy the stuff
-phase0=$(dapp create Phase0 )
-        # TODO: args
-        # address _tokensHolder,
-        # uint256 _timelockDelay,
-        # address _governorGuardian,
-        # ENS _ens,
-        # bytes32 _namehash,
-        # string memory _label
+export ETH_GAS=12000000
+phase0=$(set -x; seth send --verbose --create "0x$bin" "constructor(address,uint256,address,address,bytes32,string)" $ETH_FROM 172800 $ETH_FROM $ETH_FROM 0x0000000000000000000000000000000000000000000000000000000000000000 '""')
+
+# address _tokensHolder,
+# uint256 _timelockDelay,
+# address _governorGuardian,
+# ENS _ens,
+# bytes32 _namehash,
+# string memory _label
 
 RAD=$(seth call $phase0 "token()(address)")
 TIMELOCK=$(seth call $phase0 "timelock()(address)")
-GOV=$(seth call $phase0 "governor()(address)")
-TREASURY=$(seth call $phase0 "treasury()(address)")
+RADGOV=$(seth call $phase0 "governor()(address)")
 REGISTRAR=$(seth call $phase0 "registrar()(address)")
 
 # test propose
 seth call $RAD "delegate(address)" $ETH_FROM
-# TODO: go forward a block
-
-radgov propose example
+# go forward a block
+seth send $ETH_FROM --value 1
+export RADGOV
+libexec/radgov/radgov-propose example
