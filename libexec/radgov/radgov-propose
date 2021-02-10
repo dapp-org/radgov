@@ -25,6 +25,6 @@ data="$(sed -e 's/\(0x[0-9a-fA-F]*\)/"\1"/g' <<< "$data")"
 PROPOSE="propose(address[],uint256[],string[],bytes[],string)"
 data="$(radgov calldata "$PROPOSE" \
   "$targets" "$values" "$sigs" "$data" \""$description"\")"
-seth send "$RADGOV" "$data"
+seth send "$RADGOV" "$data" --from $ETH_FROM --keystore $ETH_KEYSTORE
 # each address can only have one proposal
-seth call "$RADGOV" "latestProposalIds(address)(uint256)"
+seth call "$RADGOV" "latestProposalIds(address)(uint256)" $ETH_FROM

@@ -15,10 +15,12 @@ die() {
 trap die EXIT
 
 export ETH_FROM=$(cat "$TMPDIR/8545/config/account")
+export ETH_RPC_URL=http://127.0.0.1:8545
 export ETH_KEYSTORE="$TMPDIR/8545/keystore"
 export ETH_PASSWORD=/dev/null
+export SETH_CHAINID=99
 
-DAPP_JSON=out/dapp.sol.json
+DAPP_JSON=dapp.sol.json
 bin=$(<$DAPP_JSON jq -r '.contracts["contracts/deploy/phase0.sol"]["Phase0"].evm.bytecode.object')
 # abi=$(<DAPP_JSON jq '.contracts["contracts/deploy/phase0.sol:Phase0"].abi')
 # type=$(seth --abi-constructor <<< "$abi")
@@ -26,7 +28,7 @@ bin=$(<$DAPP_JSON jq -r '.contracts["contracts/deploy/phase0.sol"]["Phase0"].evm
 
 # deploy the stuff
 export ETH_GAS=12000000
-phase0=$(set -x; seth send --verbose --create "0x$bin" "constructor(address,uint256,address,address,bytes32,string)" $ETH_FROM 172800 $ETH_FROM $ETH_FROM 0x0000000000000000000000000000000000000000000000000000000000000000 '""')
+phase0=$(set -x; seth send --verbose --create "0x$bin" "constructor(address,uint256,address,address,bytes32,string)" $ETH_FROM 172800 $ETH_FROM $ETH_FROM 0x0000000000000000000000000000000000000000000000000000000000000000 '""' --from $ETH_FROM --keystore $ETH_KEYSTORE)
 
 # address _tokensHolder,
 # uint256 _timelockDelay,
@@ -41,8 +43,8 @@ RADGOV=$(seth call $phase0 "governor()(address)")
 REGISTRAR=$(seth call $phase0 "registrar()(address)")
 
 # test propose
-seth call $RAD "delegate(address)" $ETH_FROM
+seth send $RAD "delegate(address)" $ETH_FROM --from $ETH_FROM --keystore $ETH_KEYSTORE
 # go forward a block
-seth send $ETH_FROM --value 1
+seth send $ETH_FROM --value 0 --from $ETH_FROM --keystore $ETH_KEYSTORE
 export RADGOV
-result/bin/radgov propose example
+./result/bin/radgov propose example
