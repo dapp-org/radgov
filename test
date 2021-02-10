@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+
+TMPDIR=$(mktemp -d)
+dapp testnet --dir "$TMPDIR" &
+ETH_FROM="$TMPDIR/8545/config/account"
+ETH_KEYSTORE="$TMPDIR/8545/keystore"
+
+# deploy the stuff
+phase0=$(dapp create Phase0 )
+        # TODO: args
+        # address _tokensHolder,
+        # uint256 _timelockDelay,
+        # address _governorGuardian,
+        # ENS _ens,
+        # bytes32 _namehash,
+        # string memory _label
+
+RAD=$(seth call $phase0 "token()(address)")
+TIMELOCK=$(seth call $phase0 "timelock()(address)")
+GOV=$(seth call $phase0 "governor()(address)")
+TREASURY=$(seth call $phase0 "treasury()(address)")
+REGISTRAR=$(seth call $phase0 "registrar()(address)")
+
+# test propose
+seth call $RAD "delegate(address)" $ETH_FROM
+# TODO: go forward a block
+
+radgov propose example
