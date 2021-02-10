@@ -1,20 +1,18 @@
-This is an example proposal for `radgov propose`. The header contains an
-arbitrary string description of the proposal followed by a single line
-containing `## PROPOSAL ##` followed by the proposal actions in the format
-`target value signature calldata`.  The target and calldata must be hex. The
-signature is either an abi string or hexdata. The value is either a number or
-hexdata. All hexdata must be prefixed with 0x.
+This is an example proposal for `radgov propose` and can be proposed with
+`radgov propose example`.
 
-For example:
+The header contains an arbitrary string description of the proposal followed by
+a single line containing `## PROPOSAL ##` followed by the proposal actions in
+the format `target value signature calldata`, with the following individual
+formats, where all hexdata must be 0x prefixed:
 
-```
-0xac0000000000000000000000000000000000ab 0 "f1()"
-0xba0000000000000000000000000000000000be 0 "f2(bool)" true
-0xca0000000000000000000000000000000000fe 0 "f3(uint256,bytes)" 1 0x1234
-0xde0000000000000000000000000000000000ed 0 "f4(uint256[],bool[])" "[1, 2]" "[true, false]"
-```
+- target: hex address
+- value: hexdata or integer
+- signature: hexdata or abi string
+- calldata: hexdata (including signature) or arguments as understood
+  by `seth calldata`
 
-This proposal can be proposed with `radgov propose example`.
+A full example can be found in the `## PROPOSAL ##` section below.
 
 Find out more at <https://radicle.xyz>
 
@@ -22,7 +20,7 @@ Find out more at <https://radicle.xyz>
 
 ```
 0xac0000000000000000000000000000000000ab 0 "f1()"
-0xba0000000000000000000000000000000000be 0 "f2(bool)" true
+0xba0000000000000000000000000000000000be 0 "f2(bool)" 0x0000000000000000000000000000000000000000000000000000000000000001
 0xca0000000000000000000000000000000000fe 0 "f3(uint256,bytes)" 1 0x1234
 0xde0000000000000000000000000000000000ed 0 "f4(uint256[],bool[])" "[1, 2]" "[true, false]"
 ```

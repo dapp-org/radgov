@@ -2,25 +2,21 @@
 ### radgov-propose -- make a governance proposal
 ### Usage: radgov propose <proposal>
 ### Propose a governance call from a file.
-set -e
+set -eu -o pipefail
 [[ $# = 1 ]] || (radgov propose --help && exit 1)
 
-description="$(sed '/^## PROPOSAL ##$/Q' $1 | sed 's/"/\\"/g')"
-proposal="$(sed -e '1,/^## PROPOSAL ##$/d' -e '/^[[:space:]]*$/d' -e '/```.*/d' $1)"
+description="$(sed -e '/^## PROPOSAL ##$/Q' -e 's/"/\\"/g' "$1")"
+proposal="$(sed -e '1,/^## PROPOSAL ##$/d' -e '/^[[:space:]]*$/d' -e '/```.*/d' "$1")"
 
-targets="[$(cut -f1 -d' ' <<< "$proposal" | paste -sd ',')]"
-values="[$(cut -f2 -d' ' <<< "$proposal" | paste -sd ',')]"
-sigs="[$(cut -f3 -d' ' <<< "$proposal" | paste -sd ',')]"
-# data="[$(cut -f4- -d' ' <<< "$proposal" | sed 's/^$/0x/' | paste -sd ',')]"
-
+targets="[$(cut -f1 -d' ' <<< "$proposal" | paste -sd,)]"
+values="[$(cut -f2 -d' ' <<< "$proposal" | paste -sd,)]"
+sigs="[$(cut -f3 -d' ' <<< "$proposal" | paste -sd,)]"
 # allow for non hex calldata
-data="[$(while read cmd; do
-  eval seth calldata $cmd | cut -b -2,11-
-done <<<"$(cut -f3- -d' ' <<< "$proposal")" | paste -sd ',')]"
+data="[$(cut -f3- -d' ' <<< "$proposal" \
+  | xargs -n1 -d'\n' -I % -- sh -c "seth calldata %" \
+  | cut -b -2,11- | paste -sd ',')]"
 
 # propose(targets,values,signatures,calldatas,description)
 PROPOSE="propose(address[],uint256[],string[],bytes[],string)"
-seth calldata "$PROPOSE" \
+seth send "$RADGOV" "$PROPOSE" \
   "$targets" "$values" "$sigs" "$data" \""$description"\"
-# seth send "$RADGOV" "$PROPOSE" \
-  # "$targets" "$values" "$sigs" "$data" "${description@Q}"
