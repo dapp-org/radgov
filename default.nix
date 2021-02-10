@@ -14,7 +14,7 @@ pkgs.stdenv.mkDerivation rec {
 
   postInstall =
     let
-      path = lib.makeBinPath [ coreutils perl dapptools.seth gnused ];
+      path = lib.makeBinPath [ coreutils perl dapptools.seth gnused findutils ];
     in
       ''
         wrapProgram "$out/bin/radgov" \
