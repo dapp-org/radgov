@@ -12,7 +12,7 @@ dapp testnet --dir "$TMPDIR" & PID=$!
 sleep 5
 die() {
   echo "shutting down testnet"
-  killall -w dapp dapp-testnet dapp---nix-run dapp---testnet-launch geth
+  killall dapp dapp-testnet dapp---nix-run dapp---testnet-launch geth
   rm -rf $TMPDIR
 }
 trap die EXIT
