@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+### radgov-delegate -- delegate votes
+### Usage: radgov delegate <address>
+### Delegate votes to an address
+set -eu -o pipefail
+[[ $# = 1 ]] || (radgov delegate --help && exit 1)
+
+seth send "$RAD" "delegate(address)" "$ETH_FROM"

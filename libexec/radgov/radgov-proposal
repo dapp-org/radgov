@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+### radgov-proposal -- view a governance proposal
+### Usage: radgov view <proposal>
+### Propose a governance call from a file.
+set -eu -o pipefail
+[[ $# = 1 ]] || (radgov proposal --help && exit 1)
+
+# struct Proposal {
+    # // Unique id for looking up a proposal
+    # uint256 id;
+    # // Creator of the proposal
+    # address proposer;
+    # // The timestamp that the proposal will be available for execution, set once the vote succeeds
+    # uint256 eta;
+    # // the ordered list of target addresses for calls to be made
+    # address[] targets;
+    # // The ordered list of values (i.e. msg.value) to be passed to the calls to be made
+    # uint256[] values;
+    # // The ordered list of function signatures to be called
+    # string[] signatures;
+    # // The ordered list of calldata to be passed to each call
+    # bytes[] calldatas;
+    # // The block at which voting begins: holders must delegate their votes prior to this block
+    # uint256 startBlock;
+    # // The block at which voting ends: votes must be cast prior to this block
+    # uint256 endBlock;
+    # // Current number of votes in favor of this proposal
+    # uint256 forVotes;
+    # // Current number of votes in opposition to this proposal
+    # uint256 againstVotes;
+    # // Flag marking whether the proposal has been canceled
+    # bool canceled;
+    # // Flag marking whether the proposal has been executed
+    # bool executed;
+    # // Receipts of ballots for the entire set of voters
+    # mapping(address => Receipt) receipts;
+# }
+
+# todo: causes seth --abi-decode to FATAL ERROR
+proposal="$(seth call "$RADGOV" "proposals(uint256)(uint256,address,uint256,address[],uint256[],string[],bytes[],uint256,uint256,uint256,uint256,bool,bool)" "$1")"
+echo "$proposal"

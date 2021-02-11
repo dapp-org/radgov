@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+### radgov-vote -- vote on a proposal
+### Usage: radgov vote <proposal> <support>
+### Cast a vote on a given proposal id, with support either true or false.
+set -eu -o pipefail
+[[ $# = 2 ]] || (radgov vote --help && exit 1)
+
+seth send "$RADGOV" "castVote(uint256,bool)" "$1" "$2"

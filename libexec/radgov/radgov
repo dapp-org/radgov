@@ -127,6 +127,5 @@ if ! [ -x "$(command -v "${0##*/}-${1-help}")" ]; then
     find "${0%radgov}" -execdir echo {} ';' | agrep -1 "${0##*/}-${1-help}" >&2
     exit 1
 fi
-set -x
 
 "${0##*/}-${1-help}" "${@:2}"

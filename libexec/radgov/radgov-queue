@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+### radgov-queue -- queue a proposal
+### Usage: radgov queue <id>
+### queue a given proposal id
+set -eu -o pipefail
+[[ $# = 1 ]] || (radgov queue --help && exit 1)
+
+if [[ $(radgov state "$1") != Succeeded ]]; then
+  echo >&2 "Proposal has not Succeeded, queueing will fail"
+  exit 1
+fi
+
+seth send "$RADGOV" "queue(uint256)" "$1"
