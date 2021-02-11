@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+### radgov-actions -- show proposal actions
+### Usage: radgov actions <proposal>
+### View the actions for a given proposal id
+set -eu -o pipefail
+[[ $# = 1 ]] || (radgov actions --help && exit 1)
+
+# pretend sigs are bytes to force hexdata and allow splitting on ,
+mapfile -t actions <<< "$(seth call "$RADGOV" "getActions(uint256)(address[],uint256[],bytes[],bytes[])" "$1")"
+
+mapfile -t -d, targets  <<< "${actions[0]},"
+mapfile -t -d, values   <<< "${actions[1]},"
+mapfile -t -d, sigs     <<< "${actions[2]},"
+mapfile -t -d, calldata <<< "${actions[3]},"
+
+for i in $(seq 0 $((${#targets[@]} - 2))); do
+  target="${targets[$i]}"
+  value="${values[$i]}"
+  sig="$(seth --to-ascii "${sigs[$i]}")"
+  fname="${sig%(*}"
+  args="${sig#$fname(}"
+  args="${args%)}"
+  echo -n "$target $value $sig "
+
+  # arrays should be surrounded with [...], but abi-decode doesn't do this
+  mapfile -t vals <<< "$(seth --abi-decode "$fname()($args)" "${calldata[$i]}")"
+  mapfile -t -d, argv <<< "${args}"
+  ix=0
+  for arg in ${argv[@]}; do
+    if [[ -z $arg ]]; then
+      break
+    elif [[ $arg =~ "[]" ]]; then
+      echo -n "[${vals[$ix]}] "
+    else
+      echo -n "${vals[$ix]} "
+    fi
+    let ix=ix+1
+  done
+  echo -en "\n"
+done

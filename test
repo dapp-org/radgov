@@ -1,15 +1,18 @@
 #!/usr/bin/env bash
-set -eu -o pipefail -x
+set -eu -o pipefail
 
+nix-build
+export PATH="./result/bin:$PATH"
 export DAPP_SOLC=solc-0.7.5
 dapp --version
 which dapp
+
 TMPDIR=$(mktemp -d)
 dapp testnet --dir "$TMPDIR" & PID=$!
 sleep 5
 die() {
   echo "shutting down testnet"
-  (set -x; killall -w dapp dapp-testnet dapp---nix-run geth)
+  killall -w dapp dapp-testnet dapp---nix-run dapp---testnet-launch geth
   rm -rf $TMPDIR
 }
 trap die EXIT
@@ -20,31 +23,30 @@ export ETH_KEYSTORE="$TMPDIR/8545/keystore"
 export ETH_PASSWORD=/dev/null
 export SETH_CHAINID=99
 
-DAPP_JSON=dapp.sol.json
-bin=$(<$DAPP_JSON jq -r '.contracts["contracts/deploy/phase0.sol"]["Phase0"].evm.bytecode.object')
-# abi=$(<DAPP_JSON jq '.contracts["contracts/deploy/phase0.sol:Phase0"].abi')
-# type=$(seth --abi-constructor <<< "$abi")
-# address=$(set -x; seth send --create "$bin" "${type/constructor/${1#*:}}" "${@:2}")
-
 # deploy the stuff
+DAPP_JSON=dapp.sol.json  # get this from radicle-contracts build output
+bin=$(<$DAPP_JSON jq -r '.contracts["contracts/deploy/phase0.sol"]["Phase0"].evm.bytecode.object')
 export ETH_GAS=12000000
-phase0=$(set -x; seth send --verbose --create "0x$bin" "constructor(address,uint256,address,address,bytes32,string)" $ETH_FROM 172800 $ETH_FROM $ETH_FROM 0x0000000000000000000000000000000000000000000000000000000000000000 '""' --from $ETH_FROM --keystore $ETH_KEYSTORE)
-
-# address _tokensHolder,
-# uint256 _timelockDelay,
-# address _governorGuardian,
-# ENS _ens,
-# bytes32 _namehash,
-# string memory _label
+phase0=$(seth send --create "0x$bin" "constructor(address,uint256,address,address,bytes32,string)" $ETH_FROM 172800 $ETH_FROM $ETH_FROM 0x0000000000000000000000000000000000000000000000000000000000000000 '""' --from $ETH_FROM --keystore $ETH_KEYSTORE)
 
 RAD=$(seth call $phase0 "token()(address)")
 TIMELOCK=$(seth call $phase0 "timelock()(address)")
 RADGOV=$(seth call $phase0 "governor()(address)")
 REGISTRAR=$(seth call $phase0 "registrar()(address)")
 
-# test propose
-seth send $RAD "delegate(address)" $ETH_FROM --from $ETH_FROM --keystore $ETH_KEYSTORE
-# go forward a block
-seth send $ETH_FROM --value 0 --from $ETH_FROM --keystore $ETH_KEYSTORE
-export RADGOV
-./result/bin/radgov propose example
+# force geth to mine a block
+nextBlock() {
+  seth send $ETH_FROM --value 0 --from $ETH_FROM --keystore $ETH_KEYSTORE
+}
+
+set -x
+export RADGOV RAD
+radgov delegate $ETH_FROM
+nextBlock
+id=$(radgov propose example)
+nextBlock
+nextBlock
+radgov vote $id true
+radgov receipt $id $ETH_FROM
+radgov state $id
+radgov actions $id

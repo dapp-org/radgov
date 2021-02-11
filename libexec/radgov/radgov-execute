@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+### radgov-execute -- execute a proposal
+### Usage: radgov execute <id>
+### execute a given proposal id
+set -eu -o pipefail
+[[ $# = 1 ]] || (radgov execute --help && exit 1)
+
+if [[ $(radgov state "$1") != Queued ]]; then
+  echo >&2 "Proposal is not Queued, execution will fail"
+  exit 1
+fi
+
+seth send "$RADGOV" "execute(uint256)" "$1"

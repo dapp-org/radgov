@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+### radgov-state -- view the state of a proposal
+### Usage: radgov state <id>
+### Show the state of a given proposal id
+set -eu -o pipefail
+[[ $# = 1 ]] || (radgov state --help && exit 1)
+
+case "$(seth call "$RADGOV" 'state(uint256)(uint256)' "$1")" in
+  0) echo "Pending"   ;;
+  1) echo "Active"    ;;
+  2) echo "Canceled"  ;;
+  3) echo "Defeated"  ;;
+  4) echo "Succeeded" ;;
+  5) echo "Queued"    ;;
+  6) echo "Expired"   ;;
+  7) echo "Executed"  ;;
+esac

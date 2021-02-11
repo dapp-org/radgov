@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+### radgov-receipt -- get a voting receipt for a proposal
+### Usage: radgov receipt <proposal> <voter>
+### View the voting receipt for a given proposal id and voter address.
+set -eu -o pipefail
+[[ $# = 2 ]] || (radgov receipt --help && exit 1)
+
+# struct Receipt {
+#     // Whether or not a vote has been cast
+#     bool hasVoted;
+#     // Whether or not the voter supports the proposal
+#     bool support;
+#     // The number of votes the voter had, which were cast
+#     uint96 votes;
+# }
+
+mapfile -t receipt <<< "$(seth call "$RADGOV" "getReceipt(uint256,address)(bool,bool,uint96)" "$1" "$2")"
+echo "hasVoted ${receipt[0]}"
+echo "support  ${receipt[1]}"
+echo "votes    $(seth --to-fix 18 "${receipt[2]}")"
