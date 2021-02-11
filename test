@@ -41,12 +41,14 @@ nextBlock() {
 
 set -x
 export RADGOV RAD
-radgov delegate $ETH_FROM
+radgov delegate $ETH_FROM --keystore $ETH_KEYSTORE
 nextBlock
+radgov account $ETH_FROM
 id=$(radgov propose example)
 nextBlock
 nextBlock
-radgov vote $id true
+radgov vote $id true --keystore $ETH_KEYSTORE
 radgov receipt $id $ETH_FROM
 radgov state $id
 radgov actions $id
+radgov ls

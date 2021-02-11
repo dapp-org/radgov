@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 ### radgov-actions -- show proposal actions
-### Usage: radgov actions <proposal>
+### Usage: radgov actions <proposal-id>
 ### View the actions for a given proposal id
 set -eu -o pipefail
 [[ $# = 1 ]] || (radgov actions --help && exit 1)

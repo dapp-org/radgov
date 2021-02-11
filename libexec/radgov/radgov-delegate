@@ -4,4 +4,8 @@
 ### Delegate votes to an address
 set -eu -o pipefail
 [[ $# = 1 ]] || (radgov delegate --help && exit 1)
-seth send "$RAD" "delegate(address)" "$1"
+
+[[ $ETH_FROM ]] || (echo >&2 "${0##*/}: error: Please set ETH_FROM to your account address" && exit 1)
+
+seth send "$RAD" "delegate(address)" "$1" --from $ETH_FROM
+
