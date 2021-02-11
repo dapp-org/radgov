@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+### radgov-account -- print rad balance and voting power of the given account
+### Usage: radgov account <address>
+### Print rad balance and voting power of the given account
+[[ $# = 1 ]] || (radgov account --help && exit 1)
+BAL=$(seth call "$RAD" "balanceOf(address)(uint256)" "$1")
+DELEGATE=$(seth call "$RAD" "delegates(address)(address)" "$1")
+VOTES=$(seth call "$RAD" "getCurrentVotes(address)(uint96)" "$1")
+echo "-- $1 -- "
+echo "Holds:        "$(seth --from-wei $BAL 'ether')" RADICLE"
+echo "Voting power: "$(seth --from-wei $VOTES 'ether')""
+echo "Delegated to: "$DELEGATE""

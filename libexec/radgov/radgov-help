@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-BUGS=https://github.com/mrchico/radgov/issues/new
+BUGS=https://github.com/dapp-org/radgov/issues/new
 
 name=${0##*/} name=${name%-help}
 file=${0%-*}${1+-$1}

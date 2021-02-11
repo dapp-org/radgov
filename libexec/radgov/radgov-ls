@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+### radgov-ls -- list current proposals
+### Usage: radgov ls
+### List all current proposals
+set -eu -o pipefail
+[[ $ETH_FROM ]] || echo >&2 "${0##*/}: error: Please set ETH_FROM to your account address"; exit 1
+
+echo "Connected to"
+radgov account "$ETH_FROM"
+
+N=$(seth call "$RADGOV" "proposalCount()(uint256)")
+
+echo "Listing $N proposals in Governor..."
+
+ID=1
+while [ $ID -le $N ]
+do
+    echo "--- Proposal $ID ---"
+    radgov actions $ID
+    radgov state $ID
+    radgov receipt $ID $ETH_FROM
+    echo "---"
+    ((ID++))
+done

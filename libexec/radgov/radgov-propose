@@ -21,10 +21,12 @@ data="[$(cut -f3- -d' ' <<< "$proposal" \
 targets="$(sed -e 's/\(0x[0-9a-fA-F]*\)/"\1"/g' <<< "$targets")"
 data="$(sed -e 's/\(0x[0-9a-fA-F]*\)/"\1"/g' <<< "$data")"
 
+[[ $ETH_FROM ]] || (echo >&2 "${0##*/}: error: Please set ETH_FROM to your account address" && exit 1)
+
 # propose(targets,values,signatures,calldatas,description)
 PROPOSE="propose(address[],uint256[],string[],bytes[],string)"
 data="$(radgov calldata "$PROPOSE" \
   "$targets" "$values" "$sigs" "$data" \""$description"\")"
-seth send "$RADGOV" "$data"
+seth send "$RADGOV" "$data" --from $ETH_FROM
 # each address can only have one proposal
 seth call "$RADGOV" "latestProposalIds(address)(uint256)" "$ETH_FROM"
