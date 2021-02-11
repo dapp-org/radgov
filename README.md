@@ -17,7 +17,7 @@ curl https://nixos.org/nix/install | sh
 
 Then install `radgov`:
 ```
-nix-env -i -f https://github.com/dapphub/dapptools/archive/master.tar.gz
+nix-env -i -f https://github.com/dapp-org/radgov/archive/master.tar.gz
 ```
 
 ## Configuration
