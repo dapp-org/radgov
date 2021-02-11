@@ -65,11 +65,12 @@ Transaction options:
 
 Commands:
 
+   account         print rad balance and voting power of the given account
    actions         show proposal actions
    cancel          cancel a proposal
    delegate        delegate votes
-   delegate        delegate votes
    execute         execute a proposal
+   ls              list current proposals
    proposal        view a governance proposal
    propose         make a governance proposal
    queue           queue a proposal
