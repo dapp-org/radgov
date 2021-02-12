@@ -45,10 +45,9 @@ echo "executed: ${proposal[7]}"
 echo ""
 echo "## ACTIONS ##"
 radgov actions "$1"
-shopt -s lastpipe
-tr ',' '\n' <<< "${RAD_RECEIPTS}" | mapfile -t receipts
+<<< "${RAD_RECEIPTS}," mapfile -t -d, receipts
 # shellcheck disable=SC2068
-for receipt in ${receipts[@]}; do
+for receipt in ${receipts[@]}; do  # no quotes to exclude empty elements
   echo -e "\n### RECEIPT $receipt ###"
   radgov receipt "$1" "$receipt"
 done

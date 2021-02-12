@@ -2,7 +2,7 @@
 ### radgov-account -- print rad balance and voting power of the given account
 ### Usage: radgov account <address>
 ### Print rad balance and voting power of the given account
-set -ex
+set -e
 
 [[ $# = 1 ]] || (radgov account --help && exit 1)
 BAL=$(seth call "$RAD" "balanceOf(address)(uint256)" "$1")
