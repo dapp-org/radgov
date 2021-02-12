@@ -39,6 +39,9 @@ P,gas-price=number   price (in wei) of each gas unit
 N,nonce=number       nonce value to use for the transaction
 V,value=number       amount (in wei) of ETH to send
 S,password=file      password for non-interactive signing
+
+  Radgov options:
+receipts=address     address to show voting receipt for
 "
 
 set -e
@@ -74,6 +77,8 @@ while [[ $1 ]]; do
     -N|--nonce)      shift; export ETH_NONCE=$1;;
     -V|--value)      shift; export ETH_VALUE=$1;;
     -S|--password)   shift; export ETH_PASSWORD=$1;;
+
+    --receipts)       shift; export RAD_RECEIPTS="$1";;
 
     *) printf "${0##*/}: internal error: %q\\n" "$1"; exit 1
   esac; shift
@@ -120,17 +125,15 @@ fi
 export ETH_RPC_URL=${ETH_RPC_URL:-${eth_rpc_url:-${ETH_RPC_HOST:-http://127.0.0.1}:${ETH_RPC_PORT:-8545}}}
 
 if ! [ -x "$(command -v "${0##*/}-${1-help}")" ]; then
-    # look for approximate matches
-    echo >&2 "'$1' is not a radgov command. See 'radgov help'."
-    echo >&2
-    echo >&2 "Most similar commands:"
-    find "${0%radgov}" -execdir echo {} ';' | agrep -1 "${0##*/}-${1-help}" >&2
-    exit 1
+  # look for approximate matches
+  echo >&2 "'$1' is not a radgov command. See 'radgov help'."
+  echo >&2
+  echo >&2 "Most similar commands:"
+  find "${0%radgov}" -execdir echo {} ';' | agrep -1 "${0##*/}-${1-help}" >&2
+  exit 1
 fi
-
 
 [[ $RAD ]] || (echo >&2 "${0##*/}: error: Please set RAD to the address of the Radicle token" && exit 1)
 [[ $RADGOV ]] || (echo >&2 "${0##*/}: error: Please set RAD_GOV to the address of the Radicle Governance contract" && exit 1)
-
 
 "${0##*/}-${1-help}" "${@:2}"

@@ -2,7 +2,7 @@ This is an example proposal for `radgov propose` and can be proposed with
 `radgov propose example`.
 
 The header contains an arbitrary string description of the proposal followed by
-a single line containing `## PROPOSAL ##` followed by the proposal actions in
+a single line containing `## ACTIONS ##` followed by the proposal actions in
 the format `target value signature calldata`, with the following individual
 formats, where all hexdata must be 0x prefixed:
 
@@ -16,7 +16,7 @@ A full example can be found in the `## PROPOSAL ##` section below.
 
 Find out more at <https://radicle.xyz>
 
-## PROPOSAL ##
+## ACTIONS ##
 
 ```
 0xac000000000000000000000000000000000000ab 0 "f1()"

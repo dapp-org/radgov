@@ -7,5 +7,4 @@ set -eu -o pipefail
 
 [[ $ETH_FROM ]] || (echo >&2 "${0##*/}: error: Please set ETH_FROM to your account address" && exit 1)
 
-seth send "$RAD" "delegate(address)" "$1" --from $ETH_FROM
-
+seth send "$RAD" "delegate(address)" "$1" --from "$ETH_FROM"

@@ -26,7 +26,8 @@ for i in $(seq 0 $((${#targets[@]} - 2))); do
   mapfile -t vals <<< "$(seth --abi-decode "$fname()($args)" "${calldata[$i]}")"
   mapfile -t -d, argv <<< "${args}"
   ix=0
-  for arg in ${argv[@]}; do
+  for arg in "${argv[@]}"; do
+    # shellcheck disable=SC2076
     if [[ -z $arg ]]; then
       break
     elif [[ $arg =~ "[]" ]]; then
@@ -34,7 +35,7 @@ for i in $(seq 0 $((${#targets[@]} - 2))); do
     else
       echo -n "${vals[$ix]} "
     fi
-    let ix=ix+1
+    ((ix=ix+1))
   done
   echo -en "\n"
 done

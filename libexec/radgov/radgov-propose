@@ -5,8 +5,8 @@
 set -eu -o pipefail
 [[ $# = 1 ]] || (radgov propose --help && exit 1)
 
-description="$(sed -e '/^## PROPOSAL ##$/Q' -e 's/"/\\"/g' "$1")"
-proposal="$(sed -e '1,/^## PROPOSAL ##$/d' -e '/^[[:space:]]*$/d' -e '/```.*/d' "$1")"
+description="$(sed -e '/^## ACTIONS ##$/Q' -e 's/"/\\"/g' "$1")"
+proposal="$(sed -e '1,/^## ACTIONS ##$/d' -e '/^[[:space:]]*$/d' -e '/```.*/d' "$1")"
 
 targets="[$(cut -f1 -d' ' <<< "$proposal" \
   | xargs -n1 -d'\n' -I % -- sh -c "seth --to-address %" \
@@ -27,6 +27,6 @@ data="$(sed -e 's/\(0x[0-9a-fA-F]*\)/"\1"/g' <<< "$data")"
 PROPOSE="propose(address[],uint256[],string[],bytes[],string)"
 data="$(radgov calldata "$PROPOSE" \
   "$targets" "$values" "$sigs" "$data" \""$description"\")"
-seth send "$RADGOV" "$data" --from $ETH_FROM
+seth send "$RADGOV" "$data" --from "$ETH_FROM"
 # each address can only have one proposal
 seth call "$RADGOV" "latestProposalIds(address)(uint256)" "$ETH_FROM"

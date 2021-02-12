@@ -7,4 +7,4 @@ set -eu -o pipefail
 
 [[ $ETH_FROM ]] || (echo >&2 "${0##*/}: error: Please set ETH_FROM to your account address" && exit 1)
 
-seth send "$RADGOV" "castVote(uint256,bool)" "$1" "$2" --from $ETH_FROM
+seth send "$RADGOV" "castVote(uint256,bool)" "$1" "$2" --from "$ETH_FROM"

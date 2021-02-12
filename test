@@ -51,4 +51,7 @@ radgov vote $id true --keystore $ETH_KEYSTORE
 radgov receipt $id $ETH_FROM
 radgov state $id
 radgov actions $id
-radgov ls
+radgov proposal $id --receipts $ETH_FROM,$ETH_FROM
+radgov proposal $id
+radgov ls --receipts $ETH_FROM
+set +x
