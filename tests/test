@@ -21,7 +21,7 @@ export ETH_PASSWORD=/dev/null
 export SETH_CHAINID=99
 
 # deploy the stuff
-DAPP_JSON=dapp.sol.json  # get this from radicle-contracts build output
+DAPP_JSON=../dapp.sol.json  # get this from radicle-contracts build output
 bin=$(<$DAPP_JSON jq -r '.contracts["contracts/deploy/phase0.sol"]["Phase0"].evm.bytecode.object')
 export ETH_GAS=12000000
 phase0=$(seth send --create "0x$bin" "constructor(address,uint256,address,address,bytes32,string)" $ETH_FROM 172800 $ETH_FROM $ETH_FROM 0x0000000000000000000000000000000000000000000000000000000000000000 '""' --from $ETH_FROM --keystore $ETH_KEYSTORE)
