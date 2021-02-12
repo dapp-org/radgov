@@ -1,11 +1,7 @@
 #!/usr/bin/env bash
 set -eu -o pipefail
 
-nix-build
-export PATH="./result/bin:$PATH"
-export DAPP_SOLC=solc-0.7.5
-dapp --version
-which dapp
+export PATH="../result/bin:$PATH"
 
 TMPDIR=$(mktemp -d)
 dapp testnet --dir "$TMPDIR" & PID=$!
