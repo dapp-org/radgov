@@ -2,7 +2,7 @@
 set -eu -o pipefail
 set -x
 
-export PATH="../result/bin:$PATH"
+export PATH="./result/bin:$PATH"
 
 TMPDIR=$(mktemp -d)
 dapp testnet --dir "$TMPDIR" & PID=$!
