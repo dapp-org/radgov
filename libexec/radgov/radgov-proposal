@@ -7,7 +7,6 @@ set -e -o pipefail
 
 # the public getter for Proposal omits dynamic data and returns
 # the following elements:
-#   uint256 id;           // Unique id for looking up a proposal
 #   address proposer;     // Creator of the proposal
 #   uint256 eta;          // The timestamp that the proposal will be available for execution, set once the vote succeeds
 #   uint256 startBlock;   // The block at which voting begins: holders must delegate their votes prior to this block
@@ -17,7 +16,7 @@ set -e -o pipefail
 #   bool canceled;        // Flag marking whether the proposal has been canceled
 #   bool executed;        // Flag marking whether the proposal has been executed
 
-mapfile -t proposal <<< "$(seth call "$RADGOV" "proposals(uint256)(uint256,address,uint256,uint256,uint256,uint256,uint256,bool,bool)" "$1")"
+mapfile -t proposal <<< "$(seth call "$RADGOV" "proposals(uint256)(address,uint256,uint256,uint256,uint256,uint256,bool,bool)" "$1")"
 
 # convert block number to estimated timestamp
 epoch() {
@@ -29,20 +28,20 @@ estimate() {
 
 echo "--- Proposal $1 ---"
 echo "state:    $(radgov state "$1")"
-echo "proposer: $(seth --to-address "${proposal[1]}")"
+echo "proposer: $(seth --to-address "${proposal[0]}")"
 if [[ ${proposal[2]} = 0 ]]; then
   TIMELOCK="$(seth call "$RADGOV" "timelock()(address)")"
   delay="$(seth call "$TIMELOCK" "delay()(uint256)")"
-  echo "eta:      unknown (as early as $(date -d "@$(($(epoch "${proposal[4]}") + delay))"))"
+  echo "eta:      unknown (as early as $(date -d "@$(($(epoch "${proposal[3]}") + delay))"))"
 else
-  echo "eta:      $(date -d "@${proposal[2]}")"
+  echo "eta:      $(date -d "@${proposal[1]}")"
 fi
-echo "start:   ~$(estimate "${proposal[3]}") [block ${proposal[3]}"]
-echo "end:     ~$(estimate "${proposal[4]}") [block ${proposal[4]}"]
-echo "for:      $(seth --to-fix 18 "${proposal[5]}")"
-echo "against:  $(seth --to-fix 18 "${proposal[6]}")"
-echo "canceled: ${proposal[7]}"
-echo "executed: ${proposal[8]}"
+echo "start:   ~$(estimate "${proposal[2]}") [block ${proposal[2]}"]
+echo "end:     ~$(estimate "${proposal[3]}") [block ${proposal[3]}"]
+echo "for:      $(seth --to-fix 18 "${proposal[4]}")"
+echo "against:  $(seth --to-fix 18 "${proposal[5]}")"
+echo "canceled: ${proposal[6]}"
+echo "executed: ${proposal[7]}"
 echo ""
 echo "## ACTIONS ##"
 radgov actions "$1"
