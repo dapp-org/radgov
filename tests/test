@@ -5,7 +5,7 @@ export PATH="../result/bin:$PATH"
 
 TMPDIR=$(mktemp -d)
 dapp testnet --dir "$TMPDIR" & PID=$!
-sleep 5
+sleep 30
 die() {
   echo "shutting down testnet"
   killall dapp dapp-testnet dapp---nix-run dapp---testnet-launch geth
