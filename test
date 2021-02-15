@@ -4,6 +4,7 @@ set -eu -o pipefail
 nix-build
 export PATH="./result/bin:$PATH"
 export DAPP_SOLC=solc-0.7.5
+export DAPP_JSON=${DAPP_JSON:-out/dapp.sol.json}  # get this from radicle-contracts-tests build output
 dapp --version
 which dapp
 
@@ -24,7 +25,6 @@ export ETH_PASSWORD=/dev/null
 export SETH_CHAINID=99
 
 # deploy the stuff
-DAPP_JSON=${DAPP_JSON:-out/dapp.sol.json}  # get this from radicle-contracts-tests build output
 bin=0x$(<$DAPP_JSON jq -r '.contracts["lib/radicle-contracts/contracts/deploy/phase0.sol"]["Phase0"].evm.bytecode.object')
 export ETH_GAS=20000000
 phase0=$(seth send --create "$bin" "constructor(address,uint256,address,address,bytes32,string)" $ETH_FROM 172800 $ETH_FROM $ETH_FROM 0x0000000000000000000000000000000000000000000000000000000000000000 '""' --from $ETH_FROM --keystore $ETH_KEYSTORE)
