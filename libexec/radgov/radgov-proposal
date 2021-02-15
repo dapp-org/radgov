@@ -29,10 +29,10 @@ estimate() {
 echo "--- Proposal $1 ---"
 echo "state:    $(radgov state "$1")"
 echo "proposer: $(seth --to-address "${proposal[0]}")"
-if [[ ${proposal[2]} = 0 ]]; then
+if [[ ${proposal[1]} = 0 ]]; then
   TIMELOCK="$(seth call "$RADGOV" "timelock()(address)")"
   delay="$(seth call "$TIMELOCK" "delay()(uint256)")"
-  echo "eta:      unknown (as early as $(date -d "@$(($(epoch "${proposal[3]}") + delay))"))"
+  echo "eta:     ~$(date -d "@$(($(epoch "${proposal[3]}") + delay))") (earliest estimated)"
 else
   echo "eta:      $(date -d "@${proposal[1]}")"
 fi
