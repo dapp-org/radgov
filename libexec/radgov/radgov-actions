@@ -20,7 +20,7 @@ for i in $(seq 0 $((${#targets[@]} - 2))); do
   fname="${sig%(*}"
   args="${sig#$fname(}"
   args="${args%)}"
-  echo -n "$target $value $sig "
+  echo -n "$target $value \"$sig\" "
 
   # arrays should be surrounded with [...], but abi-decode doesn't do this
   mapfile -t vals <<< "$(seth --abi-decode "$fname()($args)" "${calldata[$i]}")"
