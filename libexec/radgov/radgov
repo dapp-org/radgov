@@ -134,6 +134,6 @@ if ! [ -x "$(command -v "${0##*/}-${1-help}")" ]; then
 fi
 
 [[ $RAD ]] || (echo >&2 "${0##*/}: error: Please set RAD to the address of the Radicle token" && exit 1)
-[[ $RADGOV ]] || (echo >&2 "${0##*/}: error: Please set RAD_GOV to the address of the Radicle Governance contract" && exit 1)
+[[ $RADGOV ]] || (echo >&2 "${0##*/}: error: Please set RADGOV to the address of the Radicle Governance contract" && exit 1)
 
 "${0##*/}-${1-help}" "${@:2}"
